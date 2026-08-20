@@ -1,12 +1,13 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class userService {
-      user[] users = new user[10];
+      ArrayList<user> users = new ArrayList<user>();
       private int id=1;
 
       Scanner sc = new Scanner(System.in);
       public userService(){
-            users[0]=new user(0,"Mudit","Admin","123");
+            users.add(new user(0,"Mudit","Admin","123"));
       }
       
       public int getId(){
@@ -44,10 +45,10 @@ public class userService {
                   String uname=sc.nextLine();
                   System.out.print("Enter Role:");
                   String uRole=sc.nextLine();
-                  System.out.print("Enter Password:");
+                  System.out.print("Enter Password: ");
                   String upassword=sc.nextLine();
                   System.out.println("New User Created with Id: "+ id);
-                  users[id] = new user(id,uname,uRole,upassword);
+                  users.add(new user(id,uname,uRole,upassword));
                   id++;
       
             }
