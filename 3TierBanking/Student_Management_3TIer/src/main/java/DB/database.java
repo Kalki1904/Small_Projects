@@ -18,15 +18,6 @@ import java.util.Scanner;
 
 public class database {
     private Connection con;
-    public static Connection getconnection() throws SQLException {
-             String url =  "jdbc:postgresql://localhost:5432/Bank";
-             String uname = "postgres";
-             String pass = "0000";
-
-             Connection con = DriverManager.getConnection(url,uname,pass);
-             return con;
-         }
-
 
     public database(Connection con) throws SQLException {
         this.con=con;
@@ -39,7 +30,7 @@ public class database {
         public final void main(String[] args) throws SQLException {
             Scanner sc = new Scanner(System.in);
             database db = null;
-            Connection con = db.getconnection();
+            Connection con = Connections.getconnection();
             db = new database(con);
             UserService service = new UserService(con);
             int existing = 0 ;
@@ -75,7 +66,7 @@ public class database {
         ps.setString(1,n.getName());
         ps.setString(2,n.getHashPassword());
         ps.setString(3,n.getType());
-        ps.setInt(4,1000);
+        ps.setInt(4,n.getAmount());
         ps.executeUpdate();
         ResultSet rs = ps.getGeneratedKeys();
         rs.next();

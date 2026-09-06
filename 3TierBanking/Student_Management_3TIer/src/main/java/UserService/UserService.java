@@ -29,15 +29,14 @@ public class UserService {
         temp.setHashPassword(hash);
         System.out.print("Enter the type: ");
         int choice=0;
-        System.out.print("1: Admin\n2: General: ");
+        System.out.print("\n1: Admin\n2: General: ");
         choice=sc.nextInt();
         sc.nextLine();
         if(choice==1)temp.setType("ADMIN");
         else if(choice==2)temp.setType("GENERAL");
         else System.out.println("NOT VALID");
-        con.setAutoCommit(false);
+        temp.setAmount(1000);
         db.createUser(temp);
-        con.commit();
         System.out.println("---USER INFO---");
         System.out.println("ID: "+ temp.getId());
         System.out.println("Name: "+ temp.getName());
@@ -92,6 +91,7 @@ public class UserService {
                 balance -= amount;
                 try {
                     db.updateAmount(curr, balance);
+                    curr.setAmount(balance);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
@@ -107,6 +107,7 @@ public class UserService {
                 balance += amount;
                 try {
                     db.updateAmount(curr, balance);
+                    curr.setAmount(balance);
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
