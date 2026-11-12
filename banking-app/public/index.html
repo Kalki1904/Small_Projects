@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NMIT Bank</title>
+<style>
+  :root {
+    --bg1: #0b0f1a; --bg2: #1a1040; --accent1: #7c5cff; --accent2: #22d3ee;
+    --glass: rgba(255,255,255,.06); --border: rgba(255,255,255,.14);
+    --text: #e8ecf6; --muted: #9aa3bd; --ok: #34d399; --bad: #f87171;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 15% 10%, #2a1a6e 0, transparent 40%),
+                radial-gradient(circle at 85% 90%, #0b4f6c 0, transparent 40%),
+                linear-gradient(135deg, var(--bg1), var(--bg2));
+    background-attachment: fixed;
+    display: flex; justify-content: center; padding: 32px 16px;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+  h1 { margin: 0 0 4px; font-size: 28px; background: linear-gradient(90deg, var(--accent1), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .card {
+    background: var(--glass); border: 1px solid var(--border); border-radius: 18px;
+    padding: 22px; margin-bottom: 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; font: inherit; }
+  .tab.active { color: #fff; background: linear-gradient(90deg, var(--accent1), var(--accent2)); border-color: transparent; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input {
+    width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: rgba(0,0,0,.25); color: var(--text); font: inherit; outline: none;
+  }
+  input:focus { border-color: var(--accent2); }
+  button.primary {
+    margin-top: 16px; width: 100%; padding: 12px; border: 0; border-radius: 10px; cursor: pointer;
+    font: inherit; font-weight: 600; color: #fff; background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  }
+  button.primary:hover { filter: brightness(1.1); }
+  button.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .balance { font-size: 40px; font-weight: 700; margin: 6px 0 2px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .msg { margin-top: 12px; font-size: 14px; min-height: 20px; }
+  .msg.ok { color: var(--ok); } .msg.bad { color: var(--bad); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  .in { color: var(--ok); } .out { color: var(--bad); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>NMIT Bank</h1>
+  <div class="sub">Node.js + plain .txt storage • DevOps assignment</div>
+
+  <!-- AUTH -->
+  <section id="auth" class="card">
+    <div class="tabs">
+      <button class="tab active" data-tab="login">Login</button>
+      <button class="tab" data-tab="register">Open account</button>
+    </div>
+
+    <form id="loginForm">
+      <label>Username</label><input id="l_user" autocomplete="username" required>
+      <label>Password</label><input id="l_pass" type="password" autocomplete="current-password" required>
+      <button class="primary">Login</button>
+    </form>
+
+    <form id="registerForm" class="hidden">
+      <label>Full name</label><input id="r_name" required>
+      <label>Email</label><input id="r_email" type="email" required>
+      <label>Username (lowercase, digits, _)</label><input id="r_user" required>
+      <label>Password (min 6)</label><input id="r_pass" type="password" autocomplete="new-password" required>
+      <label>Initial deposit (₹, optional)</label><input id="r_dep" type="number" min="0" step="0.01" value="0">
+      <button class="primary">Create account</button>
+    </form>
+    <div id="authMsg" class="msg"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dash" class="hidden">
+    <div class="card">
+      <div class="row">
+        <div>
+          <div class="muted">Welcome back</div>
+          <div id="d_name" style="font-size:20px;font-weight:600"></div>
+          <div class="muted" id="d_acc"></div>
+        </div>
+        <button class="ghost" id="logoutBtn">Logout</button>
+      </div>
+      <div class="muted" style="margin-top:18px">Available balance</div>
+      <div class="balance" id="d_bal">₹0.00</div>
+    </div>
+
+    <div class="grid">
+      <form class="card" id="depForm">
+        <b>Deposit</b>
+        <label>Amount (₹)</label><input id="dep_amt" type="number" min="0.01" step="0.01" required>
+        <button class="primary">Deposit</button>
+      </form>
+      <form class="card" id="wdForm">
+        <b>Withdraw</b>
+        <label>Amount (₹)</label><input id="wd_amt" type="number" min="0.01" step="0.01" required>
+        <button class="primary">Withdraw</button>
+      </form>
+      <form class="card" id="trForm">
+        <b>Transfer</b>
+        <label>To account (ACC1000002)</label><input id="tr_to" required>
+        <label>Amount (₹)</label><input id="tr_amt" type="number" min="0.01" step="0.01" required>
+        <button class="primary">Send</button>
+      </form>
+    </div>
+    <div id="dashMsg" class="msg"></div>
+
+    <div class="card">
+      <b>Transaction history</b>
+      <table style="margin-top:10px">
+        <thead><tr><th>Time</th><th>Type</th><th>Amount</th><th>Balance</th><th>Note</th></tr></thead>
+        <tbody id="txnBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let token = sessionStorage.getItem('token') || '';
+
+async function api(path, method = 'GET', body) {
+  const res = await fetch('/api' + path, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function say(el, text, ok) { el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'bad'); }
+const inr = (v) => '₹' + Number(v).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+// tabs
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === t));
+  $('loginForm').classList.toggle('hidden', t.dataset.tab !== 'login');
+  $('registerForm').classList.toggle('hidden', t.dataset.tab !== 'register');
+  $('authMsg').textContent = '';
+}));
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const d = await api('/login', 'POST', { username: $('l_user').value.trim(), password: $('l_pass').value });
+    token = d.token; sessionStorage.setItem('token', token);
+    $('l_pass').value = '';
+    await showDash();
+  } catch (err) { say($('authMsg'), err.message, false); }
+});
+
+$('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const d = await api('/register', 'POST', {
+      name: $('r_name').value, email: $('r_email').value, username: $('r_user').value.trim(),
+      password: $('r_pass').value, initialDeposit: $('r_dep').value,
+    });
+    say($('authMsg'), `Account ${d.account.accountNumber} created. You can log in now.`, true);
+    document.querySelector('[data-tab=login]').click();
+    $('l_user').value = d.account.username;
+    say($('authMsg'), `Account ${d.account.accountNumber} created. You can log in now.`, true);
+  } catch (err) { say($('authMsg'), err.message, false); }
+});
+
+async function refresh() {
+  const [acc, tx] = await Promise.all([api('/account'), api('/transactions')]);
+  $('d_name').textContent = acc.name;
+  $('d_acc').textContent = acc.accountNumber;
+  $('d_bal').textContent = inr(acc.balance);
+  $('txnBody').innerHTML = tx.transactions.map((t) => {
+    const cls = ['DEPOSIT', 'TRANSFER_IN', 'OPEN'].includes(t.type) ? 'in' : 'out';
+    return `<tr><td>${new Date(t.time).toLocaleString('en-IN')}</td><td>${t.type}</td>` +
+           `<td class="${cls}">${inr(t.amount)}</td><td>${inr(t.balanceAfter)}</td><td>${t.note.replace(/</g, '&lt;')}</td></tr>`;
+  }).join('');
+}
+
+async function showDash() {
+  try {
+    await refresh();
+    $('auth').classList.add('hidden'); $('dash').classList.remove('hidden');
+  } catch { token = ''; sessionStorage.removeItem('token'); }
+}
+
+function action(formId, path, build, okText) {
+  $(formId).addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await api(path, 'POST', build());
+      say($('dashMsg'), okText, true);
+      e.target.reset();
+      await refresh();
+    } catch (err) { say($('dashMsg'), err.message, false); }
+  });
+}
+action('depForm', '/deposit', () => ({ amount: $('dep_amt').value }), 'Deposit successful');
+action('wdForm', '/withdraw', () => ({ amount: $('wd_amt').value }), 'Withdrawal successful');
+action('trForm', '/transfer', () => ({ toAccount: $('tr_to').value.trim().toUpperCase(), amount: $('tr_amt').value }), 'Transfer successful');
+
+$('logoutBtn').addEventListener('click', async () => {
+  try { await api('/logout', 'POST'); } catch {}
+  token = ''; sessionStorage.removeItem('token');
+  $('dash').classList.add('hidden'); $('auth').classList.remove('hidden');
+  $('authMsg').textContent = '';
+});
+
+if (token) showDash();
+</script>
+</body>
+</html>

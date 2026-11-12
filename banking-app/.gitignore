@@ -1,0 +1,8 @@
+node_modules/
+npm-debug.log*
+.env
+
+# real account + login data should never be committed
+data/accounts/*.txt
+data/logins/*.txt
+data/**/*.tmp
